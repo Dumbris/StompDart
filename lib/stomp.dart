@@ -64,8 +64,10 @@ class Client {
 
   StreamController<Frame> _receiptController = new StreamController();
   StreamController<Frame> _errorController 	 = new StreamController();
+  StreamController<Frame> _receiveController = new StreamController();
   //Server side ERROR frames
-  Stream<Frame> get onError => _errorController.stream;
+  Stream<Frame> get onError 	=> _errorController.stream;
+  Stream<Frame> get onReceive 	=> _receiveController.stream;
 
   /**
    * Heartbeat properties of the client
@@ -192,7 +194,7 @@ class Client {
              * we add the frame to that controller.
              **/
             String subscription = frame.headers["subscription"];
-            StreamController<Frame> controller = this._subscriptions[subscription];
+            StreamController<Frame> controller = this.getSubcriptionController(subscription);
 
             if (controller != null && controller.hasListener) {
               //client = this;
@@ -401,5 +403,12 @@ class Client {
     headers["message-id"] = messageID;
     headers["subscription"] = subscription;
     this._transmit("NACK", headers);
+  }
+  
+  StreamController<Frame> getSubcriptionController(subscription) {
+	  if (this._subscriptions.containsKey(subscription)) {
+		  return this._subscriptions[subscription];
+	  }
+	  return this._receiveController;
   }
 }
